@@ -1,20 +1,28 @@
 // import React, { useEffect, useRef, useState } from 'react';
 // import * as THREE from 'three';
-// import { extend, Canvas, useThree, useFrame } from '@react-three/fiber';
-// import { OrbitControls } from '@/utils/OrbitControls';
+// import { Canvas, extend, useThree, useFrame, ReactThreeFiber } from '@react-three/fiber';
+// import { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls';
 
-// extend({ OrbitControls });
+// // Extender o OrbitControls para usar no R3F
+// extend({ OrbitControls: OrbitControlsImpl });
 
-// const MagicCanvas = () => {
-//   const [font, setFont] = useState(null);
-//   const [particleTexture, setParticleTexture] = useState(null);
+// interface EnvironmentProps {
+//   font: any;
+//   particleTexture: THREE.Texture;
+// }
+
+// const MagicCanvas: React.FC = () => {
+//   const [font, setFont] = useState<THREE.Font | null>(null);
+//   const [particleTexture, setParticleTexture] = useState<THREE.Texture | null>(null);
 
 //   useEffect(() => {
 //     const manager = new THREE.LoadingManager();
 //     manager.onLoad = () => console.log('Resources Loaded');
 
-//     new THREE.FontLoader(manager).load('https://res.cloudinary.com/dydre7amr/raw/upload/v1612950355/font_zsd4dr.json', setFont);
-//     new THREE.TextureLoader(manager).load('https://res.cloudinary.com/dfvtkoboz/image/upload/v1605013866/particle_a64uzf.png', setParticleTexture);
+//     const fontLoader = new THREE.FontLoader(manager);
+//     fontLoader.load('https://res.cloudinary.com/dydre7amr/raw/upload/v1612950355/font_zsd4dr.json', setFont);
+//     const textureLoader = new THREE.TextureLoader(manager);
+//     textureLoader.load('https://res.cloudinary.com/dfvtkoboz/image/upload/v1605013866/particle_a64uzf.png', setParticleTexture);
 //   }, []);
 
 //   return (
@@ -26,30 +34,23 @@
 //   );
 // };
 
-// const Environment = ({ font, particleTexture }: any) => {
-//   const { camera, gl } = useThree();
-//   const controls: any = useRef();
+// const Environment: React.FC<EnvironmentProps> = ({ font, particleTexture }) => {
+//   const { camera, gl, scene } = useThree();
+//   const controls = useRef<OrbitControlsImpl>(null!);
 
 //   useEffect(() => {
 //     camera.position.set(0, 0, 100);
-//     controls.current.update();
 //   }, [camera]);
 
-//   useFrame(() => gl.render());
+//   useFrame(() => {
+//     controls.current.update();
+//     gl.render(scene, camera);  // Correção aqui: Acesso direto à 'scene' do hook 'useThree'
+//   });
 
 //   return (
-//     <>
-//     {/* @ts-ignore */}
-//       <orbitControls ref={controls} args={[camera, gl.domElement]} />
-//       {/* Add additional scene setup and component rendering here */}
-//     </>
+//     // @ts-ignore
+//     <orbitControls ref={controls} args={[camera, gl.domElement]} />
 //   );
-// };
-
-// const CreateParticles = ({ scene, font, particleTexture }: any) => {
-//   // Setup particles using the provided font and texture
-//   // This function will need to be expanded to include the detailed particle creation logic
-//   return null;
 // };
 
 // export default MagicCanvas;
