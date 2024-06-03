@@ -34,7 +34,7 @@ const ThreeScene = () => {
     const controls = new TrackballControls(camera, renderer.domElement);
 
     const image: any = document.createElement("img");
-    image.src = "https://threejs.org/examples/textures/sprite.png"; // Ajuste o caminho conforme necessário
+    image.src = "https://threejs.org/examples/textures/sprite.png";
     image.onload = () => {
       for (let i = 0; i < 512; i++) {
         const object = new CSS3DSprite(image.cloneNode()) as any;
@@ -61,9 +61,7 @@ const ThreeScene = () => {
     function setupPositions() {
       const particlesTotal = 512;
 
-      // Plane: sem alterações necessárias na descrição anterior
-      // Cube: Revisar a distribuição
-      const cubeSize = Math.cbrt(particlesTotal); // Tentativa de distribuir uniformemente
+      const cubeSize = Math.cbrt(particlesTotal); 
       const separationCube = 150;
       const offsetCube = ((cubeSize - 1) * separationCube) / 2;
 
@@ -77,7 +75,6 @@ const ThreeScene = () => {
         positions.current.cube.push({ x, y, z });
       }
 
-      // Sphere: Revisar a distribuição angular e radial
       const radius = 750;
       positions.current.sphere = [];
       for (let i = 0; i < particlesTotal; i++) {
@@ -93,7 +90,7 @@ const ThreeScene = () => {
     function transition() {
       const styles = ["plane", "cube", "random", "sphere"];
       const style = styles[currentRef.current % styles.length];
-      const duration = 2000;
+      const duration = 1000;
 
       objects.current.forEach((object: any, index: number) => {
         new TWEEN.Tween(object.position)

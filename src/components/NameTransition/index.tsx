@@ -1,56 +1,80 @@
-// import React, { useEffect, useRef, useState } from 'react';
-// import * as THREE from 'three';
-// import { Canvas, extend, useThree, useFrame, ReactThreeFiber } from '@react-three/fiber';
-// import { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls';
+import React, { useEffect, useRef, useState } from 'react';
+import { Canvas, useFrame, useThree, extend } from '@react-three/fiber';
+import * as THREE from 'three';
+import { FontLoader, OrbitControls, TextGeometry } from 'three/examples/jsm/Addons.js';
 
-// // Extender o OrbitControls para usar no R3F
-// extend({ OrbitControls: OrbitControlsImpl });
+extend({ OrbitControls });
 
-// interface EnvironmentProps {
-//   font: any;
-//   particleTexture: THREE.Texture;
-// }
+// Carregar fonte e textura
+const useLoaders = () => {
+  const [font, setFont] = useState<any | null>(null);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
-// const MagicCanvas: React.FC = () => {
-//   const [font, setFont] = useState<THREE.Font | null>(null);
-//   const [particleTexture, setParticleTexture] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    const fontLoader = new FontLoader();
+    fontLoader.load('https://res.cloudinary.com/dydre7amr/raw/upload/v1612950355/font_zsd4dr.json', setFont);
 
-//   useEffect(() => {
-//     const manager = new THREE.LoadingManager();
-//     manager.onLoad = () => console.log('Resources Loaded');
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load('https://res.cloudinary.com/dfvtkoboz/image/upload/v1605013866/particle_a64uzf.png', setTexture);
+  }, []);
 
-//     const fontLoader = new THREE.FontLoader(manager);
-//     fontLoader.load('https://res.cloudinary.com/dydre7amr/raw/upload/v1612950355/font_zsd4dr.json', setFont);
-//     const textureLoader = new THREE.TextureLoader(manager);
-//     textureLoader.load('https://res.cloudinary.com/dfvtkoboz/image/upload/v1605013866/particle_a64uzf.png', setParticleTexture);
-//   }, []);
+  return { font, texture };
+};
 
-//   return (
-//     <Canvas className="w-full h-screen">
-//       {font && particleTexture && (
-//         <Environment font={font} particleTexture={particleTexture} />
-//       )}
-//     </Canvas>
-//   );
-// };
+const MagicCanvas = () => {
+  const { font, texture } = useLoaders();
 
-// const Environment: React.FC<EnvironmentProps> = ({ font, particleTexture }) => {
-//   const { camera, gl, scene } = useThree();
-//   const controls = useRef<OrbitControlsImpl>(null!);
+  return (
+    <Canvas className="w-full h-screen">
+      {font && texture && <Environment font={font} texture={texture} />}
+    </Canvas>
+  );
+};
 
-//   useEffect(() => {
-//     camera.position.set(0, 0, 100);
-//   }, [camera]);
+const Environment = ({ font, texture }: { font: any; texture: THREE.Texture }) => {
+  const { scene, camera, gl } = useThree();
+  const controlsRef = useRef<OrbitControls>(null!);
 
-//   useFrame(() => {
-//     controls.current.update();
-//     gl.render(scene, camera);  // Correção aqui: Acesso direto à 'scene' do hook 'useThree'
-//   });
+  // Configurar câmera
+  useEffect(() => {
+    camera.position.set(0, 0, 100);
+    controlsRef.current = new OrbitControls(camera, gl.domElement);
+  }, [camera, gl.domElement]);
 
-//   return (
-//     // @ts-ignore
-//     <orbitControls ref={controls} args={[camera, gl.domElement]} />
-//   );
-// };
+  // Criar partículas de texto
+  useEffect(() => {
+    const particles = createTextParticles(font, texture, scene);
+    scene.add(particles);
 
-// export default MagicCanvas;
+    return () => {
+      scene.remove(particles);
+    };
+  }, [font, texture, scene]);
+
+  useFrame(() => {
+    controlsRef.current.update();
+    gl.render(scene, camera);
+  });
+
+  return null;
+};
+
+const createTextParticles = (font: any, texture: THREE.Texture, scene: THREE.Scene) => {
+  const geometry = new TextGeometry('Hello', {
+    font: font,
+    size: 10,
+    height: 2,
+  });
+
+  const material = new THREE.PointsMaterial({
+    map: texture,
+    size: 0.5,
+    transparent: true,
+    color: 0xffffff,
+  });
+
+  const points = new THREE.Points(geometry, material);
+  return points;
+};
+
+export default MagicCanvas;
